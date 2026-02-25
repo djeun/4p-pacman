@@ -359,6 +359,71 @@ canvas#game-canvas {
   to   { opacity: 0; }
 }
 
+/* ---------- 최종 결과 화면 ---------- */
+.game-end-winner {
+  font-size: 1.2rem;
+  color: #FFD700;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  padding: 4px 0;
+}
+
+ul.game-end-scores {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 260px;
+}
+
+ul.game-end-scores li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-left: 3px solid #444;
+  background: #111;
+  border-radius: 0 4px 4px 0;
+}
+
+ul.game-end-scores li.winner {
+  border-left-color: #FFD700;
+  background: #1a1500;
+}
+
+ul.game-end-scores .rank-label {
+  width: 36px;
+  font-size: 0.8rem;
+  color: #888;
+  flex-shrink: 0;
+}
+
+ul.game-end-scores li.winner .rank-label {
+  color: #FFD700;
+}
+
+ul.game-end-scores .rank-name {
+  flex: 1;
+  font-size: 1rem;
+}
+
+ul.game-end-scores li.winner .rank-name {
+  color: #FFD700;
+  font-weight: bold;
+}
+
+ul.game-end-scores .rank-score {
+  font-size: 0.9rem;
+  color: #aaa;
+  flex-shrink: 0;
+}
+
+ul.game-end-scores li.winner .rank-score {
+  color: #FFD700;
+}
+
 /* ---------- 스크롤바 (플레이어 목록) ---------- */
 #player-list::-webkit-scrollbar {
   width: 4px;

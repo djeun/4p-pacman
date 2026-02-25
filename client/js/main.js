@@ -332,14 +332,23 @@ document.addEventListener('DOMContentLoaded', () => {
       gameEndContent.innerHTML = '';
 
       const title = document.createElement('h2');
-      title.textContent = 'Game Over';
+      title.textContent = 'Final Results';
       gameEndContent.appendChild(title);
 
-      if (data.scores) {
+      if (data.scores && data.scores.length > 0) {
+        const winner = data.scores[0];
+        const winnerEl = document.createElement('p');
+        winnerEl.className = 'game-end-winner';
+        winnerEl.textContent = `Winner: ${winner.name}`;
+        gameEndContent.appendChild(winnerEl);
+
+        const RANK_LABELS = ['1st', '2nd', '3rd', '4th'];
         const ul = document.createElement('ul');
+        ul.className = 'game-end-scores';
         data.scores.forEach((entry, i) => {
           const li = document.createElement('li');
-          li.textContent = `#${i + 1} ${entry.name}: ${entry.score} pts`;
+          const rankLabel = RANK_LABELS[i] || `${i + 1}th`;
+          li.innerHTML = `<span class="rank-label">${rankLabel}</span><span class="rank-name">${entry.name}</span><span class="rank-score">${entry.score} pts</span>`;
           if (i === 0) li.classList.add('winner');
           ul.appendChild(li);
         });
@@ -348,6 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const backBtn = document.createElement('button');
       backBtn.textContent = 'Back to Lobby';
+      backBtn.className = 'btn btn-primary';
+      backBtn.style.marginTop = '8px';
       backBtn.addEventListener('click', () => {
         gameEndOverlay.style.display = 'none';
         isGameOver = false;

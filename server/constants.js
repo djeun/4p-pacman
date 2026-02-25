@@ -8,9 +8,9 @@ module.exports = {
   CELL_SIZE: 32,
 
   // 플레이어
-  PLAYER_SPEED: 0.7,        // 틱당 이동 누적값 (1.0 이상 될 때 실제 이동)
+  PLAYER_SPEED: 1,          // 틱당 1셀 이동
   MAX_PLAYERS: 4,
-  ATTACK_DURATION: 100,     // 틱 (10초 × 10틱/초)
+  ATTACK_DURATION: 70,      // 틱 (~10초 × 7틱/초 at 143ms tick)
 
   // 동전
   MAX_ATTACK_COINS: 2,
@@ -19,8 +19,8 @@ module.exports = {
   COIN_SPAWN_INTERVAL_MAX: 150, // 최대 150틱 후
 
   // 게임
-  TICK_RATE: 100,               // ms
-  SHRINK_START_TICK: 300,       // 30초 후 맵 축소 시작
+  TICK_RATE: 143,               // ms (143ms per cell = ~7 cells/sec, steady movement)
+  SHRINK_START_TICK: 999999,    // 사실상 맵 축소 없음 (무제한)
   TOTAL_ROUNDS: 5,              // 총 라운드 수
   ROUND_SCORES: [300, 200, 100, 0],
 

@@ -3,8 +3,8 @@
 
 window.CONSTANTS = {
   // 그리드
-  GRID_COLS: 7,
-  GRID_ROWS: 7,
+  GRID_COLS: 14,
+  GRID_ROWS: 14,
   CELL_SIZE: 32,
 
   // 플레이어
@@ -18,10 +18,10 @@ window.CONSTANTS = {
 
   // 플레이어 시작 위치 (그리드 좌표, 각 코너) — 7×7 기준
   SPAWN_POSITIONS: [
-    { x: 1, y: 1 },
-    { x: 5, y: 1 },
-    { x: 1, y: 5 },
-    { x: 5, y: 5 },
+    { x: 1,  y: 1  },
+    { x: 12, y: 1  },
+    { x: 1,  y: 12 },
+    { x: 12, y: 12 },
   ],
 
   // 셀 타입

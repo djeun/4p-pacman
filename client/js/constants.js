@@ -3,25 +3,25 @@
 
 window.CONSTANTS = {
   // 그리드
-  GRID_COLS: 21,
-  GRID_ROWS: 21,
+  GRID_COLS: 7,
+  GRID_ROWS: 7,
   CELL_SIZE: 32,
 
   // 플레이어
   MAX_PLAYERS: 4,
-  ATTACK_DURATION: 70, // 틱 (~10초 × 7틱/초 at 143ms tick)
+  ATTACK_DURATION: 49, // 틱 (~10초 at 204ms tick)
 
   // 게임
-  TICK_RATE: 143, // ms
+  TICK_RATE: 204, // ms (70% speed)
   TOTAL_ROUNDS: 5,
   ROUND_SCORES: [300, 200, 100, 0],
 
-  // 플레이어 시작 위치 (그리드 좌표, 각 코너)
+  // 플레이어 시작 위치 (그리드 좌표, 각 코너) — 7×7 기준
   SPAWN_POSITIONS: [
-    { x: 1,  y: 1  },
-    { x: 19, y: 1  },
-    { x: 1,  y: 19 },
-    { x: 19, y: 19 },
+    { x: 1, y: 1 },
+    { x: 5, y: 1 },
+    { x: 1, y: 5 },
+    { x: 5, y: 5 },
   ],
 
   // 셀 타입

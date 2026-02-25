@@ -96,8 +96,9 @@ window.Renderer = class Renderer {
       const cx = coin.x * CELL_SIZE + CELL_SIZE / 2;
       const cy = coin.y * CELL_SIZE + CELL_SIZE / 2;
 
+      const coinR = Math.max(4, Math.floor(CELL_SIZE / 4));
       ctx.beginPath();
-      ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+      ctx.arc(cx, cy, coinR, 0, Math.PI * 2);
       ctx.fillStyle = '#FFD700'; // 노란색
       ctx.fill();
 
@@ -136,7 +137,7 @@ window.Renderer = class Renderer {
 
     const cx = player.x * CELL_SIZE + CELL_SIZE / 2;
     const cy = player.y * CELL_SIZE + CELL_SIZE / 2;
-    const radius = 14;
+    const radius = Math.floor(CELL_SIZE / 2) - 2;
 
     // 입 모양 각도 (45도)
     const mouthAngle = Math.PI / 4;

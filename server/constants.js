@@ -3,33 +3,33 @@
 
 module.exports = {
   // 그리드
-  GRID_COLS: 21,
-  GRID_ROWS: 21,
+  GRID_COLS: 7,
+  GRID_ROWS: 7,
   CELL_SIZE: 32,
 
   // 플레이어
   PLAYER_SPEED: 1,          // 틱당 1셀 이동
   MAX_PLAYERS: 4,
-  ATTACK_DURATION: 70,      // 틱 (~10초 × 7틱/초 at 143ms tick)
+  ATTACK_DURATION: 49,      // 틱 (~10초 at 204ms tick)
 
   // 동전
   MAX_ATTACK_COINS: 2,
-  COIN_MIN_DISTANCE: 5,         // 플레이어와 최소 거리(셀)
-  COIN_SPAWN_INTERVAL_MIN: 10,  // 최소 10틱 후 (초반 공백 해소)
-  COIN_SPAWN_INTERVAL_MAX: 150, // 최대 150틱 후
+  COIN_MIN_DISTANCE: 2,         // 플레이어와 최소 거리(셀) — 작은 맵
+  COIN_SPAWN_INTERVAL_MIN: 5,   // 최소 5틱 후
+  COIN_SPAWN_INTERVAL_MAX: 30,  // 최대 30틱 후
 
   // 게임
-  TICK_RATE: 143,               // ms (143ms per cell = ~7 cells/sec, steady movement)
+  TICK_RATE: 204,               // ms (143ms / 0.7 ≈ 204ms, 70% 속도)
   SHRINK_START_TICK: 999999,    // 사실상 맵 축소 없음 (무제한)
   TOTAL_ROUNDS: 5,              // 총 라운드 수
   ROUND_SCORES: [300, 200, 100, 0],
 
-  // 플레이어 시작 위치 (그리드 좌표, 각 코너)
+  // 플레이어 시작 위치 (그리드 좌표, 각 코너) — 7×7 기준
   SPAWN_POSITIONS: [
-    { x: 1,  y: 1  },
-    { x: 19, y: 1  },
-    { x: 1,  y: 19 },
-    { x: 19, y: 19 },
+    { x: 1, y: 1 },
+    { x: 5, y: 1 },
+    { x: 1, y: 5 },
+    { x: 5, y: 5 },
   ],
 
   // 셀 타입

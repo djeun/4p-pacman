@@ -15,12 +15,13 @@ module.exports = {
   // 동전
   MAX_ATTACK_COINS: 2,
   COIN_MIN_DISTANCE: 5,         // 플레이어와 최소 거리(셀)
-  COIN_SPAWN_INTERVAL_MIN: 50,  // 최소 50틱 후
+  COIN_SPAWN_INTERVAL_MIN: 10,  // 최소 10틱 후 (초반 공백 해소)
   COIN_SPAWN_INTERVAL_MAX: 150, // 최대 150틱 후
 
   // 게임
   TICK_RATE: 100,               // ms
   SHRINK_START_TICK: 300,       // 30초 후 맵 축소 시작
+  TOTAL_ROUNDS: 5,              // 총 라운드 수
   ROUND_SCORES: [300, 200, 100, 0],
 
   // 플레이어 시작 위치 (그리드 좌표, 각 코너)

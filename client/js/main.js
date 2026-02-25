@@ -12,12 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------------------
   // 클라이언트 상태
   // ---------------------------------------------------------------------------
-  const gameClient   = new window.GameClient();
-  let   renderer     = null;
-  let   inputHandler = null;
-  let   rafId        = null;
-  let   isHost       = false;
-  let   gameStarted  = false;
+  const gameClient     = new window.GameClient();
+  let   renderer       = null;
+  let   inputHandler   = null;
+  let   rafId          = null;
+  let   isHost         = false;
+  let   gameStarted    = false;
+  let   currentRoomCode = null;
 
   // ---------------------------------------------------------------------------
   // DOM 참조
@@ -30,12 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const joinBtn        = document.getElementById('join-btn');
   const playerListEl   = document.getElementById('player-list');
   const roomCodeEl     = document.getElementById('room-code');
+  const copyCodeBtn    = document.getElementById('copy-code-btn');
   const startBtn       = document.getElementById('start-btn');
   const gameCanvas     = document.getElementById('game-canvas');
   const scoreOverlay   = document.getElementById('score-overlay');
   const scoreContent   = document.getElementById('score-content');
   const gameEndOverlay = document.getElementById('game-end-overlay');
   const gameEndContent = document.getElementById('game-end-content');
+  const toastContainer = document.getElementById('toast-container');
 
   // ---------------------------------------------------------------------------
   // 화면 전환 헬퍼
@@ -48,6 +51,31 @@ document.addEventListener('DOMContentLoaded', () => {
   function showGame() {
     lobbyEl.style.display = 'none';
     gameEl.style.display  = 'block';
+  }
+
+  // ---------------------------------------------------------------------------
+  // 토스트 알림
+  // ---------------------------------------------------------------------------
+  function showToast(message, type = '') {
+    if (!toastContainer) return;
+    const el = document.createElement('div');
+    el.className = `toast${type ? ' toast-' + type : ''}`;
+    el.textContent = message;
+    toastContainer.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 닉네임 가져오기 (유효성 검사)
+  // ---------------------------------------------------------------------------
+  function getValidName() {
+    const name = nameInput ? nameInput.value.trim().slice(0, 12) : '';
+    if (!name) {
+      showToast('닉네임을 입력해주세요.', 'info');
+      if (nameInput) nameInput.focus();
+      return null;
+    }
+    return name;
   }
 
   // ---------------------------------------------------------------------------
@@ -96,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 방 만들기
   if (createBtn) {
     createBtn.addEventListener('click', () => {
-      const name = nameInput ? nameInput.value.trim() : '';
+      const name = getValidName();
+      if (!name) return;
       socket.emit(EVENTS.CREATE_ROOM, { name });
     });
   }
@@ -104,10 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // 참가하기
   if (joinBtn) {
     joinBtn.addEventListener('click', () => {
-      const name = nameInput ? nameInput.value.trim() : '';
+      const name = getValidName();
+      if (!name) return;
       const code = roomCodeInput ? roomCodeInput.value.trim().toUpperCase() : '';
       if (!code) {
-        alert('룸 코드를 입력해주세요.');
+        showToast('룸 코드를 입력해주세요.', 'info');
+        if (roomCodeInput) roomCodeInput.focus();
         return;
       }
       socket.emit(EVENTS.JOIN_ROOM, { name, code });
@@ -121,6 +152,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Enter 키: 닉네임 입력창 → 방 만들기
+  if (nameInput) {
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') createBtn && createBtn.click();
+    });
+  }
+
+  // Enter 키: 룸 코드 입력창 → 참가하기
+  if (roomCodeInput) {
+    roomCodeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') joinBtn && joinBtn.click();
+    });
+  }
+
+  // 룸 코드 복사 버튼
+  if (copyCodeBtn) {
+    copyCodeBtn.addEventListener('click', () => {
+      if (!currentRoomCode) return;
+      navigator.clipboard.writeText(currentRoomCode).then(() => {
+        showToast('룸 코드가 복사되었습니다!', 'info');
+      }).catch(() => {
+        showToast(currentRoomCode, 'info');
+      });
+    });
+  }
+
+  // 게임 중 탭/창 닫기 경고
+  window.addEventListener('beforeunload', (e) => {
+    if (gameStarted) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
   // ---------------------------------------------------------------------------
   // 소켓 이벤트 핸들러
   // ---------------------------------------------------------------------------
@@ -129,29 +194,28 @@ document.addEventListener('DOMContentLoaded', () => {
   socket.on(EVENTS.ROOM_CREATED, (data) => {
     // data: { code, hostId, players }
     isHost = true;
+    currentRoomCode = data.code;
     gameClient.setMyId(socket.id);
 
-    if (roomCodeEl) {
-      roomCodeEl.textContent = `룸 코드: ${data.code}`;
-    }
-    if (startBtn) {
-      startBtn.style.display = 'inline-block';
-    }
+    if (roomCodeEl) roomCodeEl.textContent = `룸 코드: ${data.code}`;
+    if (copyCodeBtn) copyCodeBtn.style.display = 'inline-block';
+    if (startBtn)   startBtn.style.display = 'inline-block';
     updatePlayerList(data.players, data.hostId);
   });
 
   // 방 참가 완료
   socket.on(EVENTS.ROOM_JOINED, (data) => {
+    // 게임 중 수신된 ROOM_JOINED는 로비 UI 갱신 건너뜀
+    if (gameStarted) return;
+
     // data: { code, hostId, players }
     isHost = data.hostId === socket.id;
+    currentRoomCode = data.code;
     gameClient.setMyId(socket.id);
 
-    if (roomCodeEl) {
-      roomCodeEl.textContent = `룸 코드: ${data.code}`;
-    }
-    if (startBtn) {
-      startBtn.style.display = isHost ? 'inline-block' : 'none';
-    }
+    if (roomCodeEl) roomCodeEl.textContent = `룸 코드: ${data.code}`;
+    if (copyCodeBtn) copyCodeBtn.style.display = 'inline-block';
+    if (startBtn)   startBtn.style.display = isHost ? 'inline-block' : 'none';
     updatePlayerList(data.players, data.hostId);
   });
 
@@ -172,6 +236,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 사망 알림
+  socket.on(EVENTS.PLAYER_DIED, (data) => {
+    const isMe = data.playerId === socket.id;
+    const msg  = isMe ? '당신이 사망했습니다!' : `${data.name} 사망`;
+    showToast(msg, 'death');
+  });
+
   // 라운드 종료
   socket.on(EVENTS.ROUND_END, (data) => {
     // data: { scores: [{id, name, score}, ...], round }
@@ -186,13 +257,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (scoreOverlay && scoreContent) {
       scoreContent.innerHTML = '';
 
+      const { TOTAL_ROUNDS } = window.CONSTANTS;
       const title = document.createElement('h2');
-      title.textContent = `Round ${data.round} 종료`;
+      title.textContent = `Round ${data.round} / ${TOTAL_ROUNDS} 종료`;
       scoreContent.appendChild(title);
 
       if (data.scores) {
+        const sorted = [...data.scores].sort((a, b) => b.score - a.score);
         const ul = document.createElement('ul');
-        data.scores.forEach((entry, i) => {
+        sorted.forEach((entry, i) => {
           const li = document.createElement('li');
           li.textContent = `${i + 1}위 ${entry.name}: ${entry.score}점`;
           ul.appendChild(li);
@@ -200,20 +273,29 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreContent.appendChild(ul);
       }
 
+      // 카운트다운 표시
+      const countdown = document.createElement('p');
+      countdown.style.cssText = 'color:#aaa;font-size:0.85rem;';
+      scoreContent.appendChild(countdown);
+
       scoreOverlay.style.display = 'flex';
 
-      // 3초 후 로비로 복귀
-      setTimeout(() => {
-        scoreOverlay.style.display = 'none';
-        gameStarted = false;
-        stopGameLoop();
-        showLobby();
+      let remaining = 3;
+      countdown.textContent = `${remaining}초 후 계속...`;
+      const timer = setInterval(() => {
+        remaining--;
+        if (remaining > 0) {
+          countdown.textContent = `${remaining}초 후 계속...`;
+        } else {
+          clearInterval(timer);
+          scoreOverlay.style.display = 'none';
+          gameStarted = false;
+          stopGameLoop();
+          showLobby();
 
-        // 방 정보 초기화 (재참가를 위해 유지하거나 초기화 가능)
-        if (startBtn) {
-          startBtn.style.display = isHost ? 'inline-block' : 'none';
+          if (startBtn) startBtn.style.display = isHost ? 'inline-block' : 'none';
         }
-      }, 3000);
+      }, 1000);
     }
   });
 
@@ -259,9 +341,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 서버 연결 끊김
+  socket.on('disconnect', () => {
+    stopGameLoop();
+    if (inputHandler) {
+      inputHandler.destroy();
+      inputHandler = null;
+    }
+    gameStarted = false;
+    showToast('서버와의 연결이 끊어졌습니다.', 'info');
+    showLobby();
+  });
+
   // 에러
   socket.on(EVENTS.ERROR, (data) => {
-    alert(data.message || '오류가 발생했습니다.');
+    showToast(data.message || '오류가 발생했습니다.', 'info');
   });
 
   // ---------------------------------------------------------------------------

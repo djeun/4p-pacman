@@ -34,8 +34,8 @@ window.Renderer = class Renderer {
       return;
     }
 
-    this.drawMap(state.map);
-    this.drawCoins(state.coins);
+    this.drawMap(state.map, state.shrinkBorder || 0);
+    this.drawCoins(state.attackCoins);
     this.drawPlayers(state.players, myId);
     this.drawUI(state, myId);
   }
@@ -47,16 +47,34 @@ window.Renderer = class Renderer {
   /**
    * 맵 그리드를 렌더링한다.
    * @param {number[][]} map - 2D 배열, CELL_WALL(1) 또는 CELL_EMPTY(0)
+   * @param {number} shrinkBorder - 현재 축소된 테두리 크기
    */
-  drawMap(map) {
+  drawMap(map, shrinkBorder = 0) {
     if (!map) return;
-    const { CELL_SIZE, CELL_WALL } = window.CONSTANTS;
+    const { CELL_SIZE, CELL_WALL, GRID_COLS, GRID_ROWS } = window.CONSTANTS;
     const ctx = this._ctx;
 
     for (let row = 0; row < map.length; row++) {
       for (let col = 0; col < map[row].length; col++) {
         ctx.fillStyle = map[row][col] === CELL_WALL ? '#1a1aff' : '#000000';
         ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+      }
+    }
+
+    // 축소된 영역을 어두운 빨간 오버레이로 표시
+    if (shrinkBorder > 0) {
+      ctx.fillStyle = 'rgba(120, 0, 0, 0.72)';
+      for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+          if (
+            col <= shrinkBorder ||
+            col >= GRID_COLS - 1 - shrinkBorder ||
+            row <= shrinkBorder ||
+            row >= GRID_ROWS - 1 - shrinkBorder
+          ) {
+            ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+          }
+        }
       }
     }
   }
@@ -120,8 +138,8 @@ window.Renderer = class Renderer {
     const cy = player.y * CELL_SIZE + CELL_SIZE / 2;
     const radius = 14;
 
-    // 입 모양 각도 (0.25 rad ≈ 14도)
-    const mouthAngle = 0.25;
+    // 입 모양 각도 (45도)
+    const mouthAngle = Math.PI / 4;
 
     // 방향에 따라 회전 각도 결정
     const rotationMap = {
@@ -218,7 +236,8 @@ window.Renderer = class Renderer {
 
     // 라운드 번호 (state.round가 있는 경우)
     if (state.round != null) {
-      const roundText = `Round ${state.round}`;
+      const { TOTAL_ROUNDS } = window.CONSTANTS;
+      const roundText = `Round ${state.round} / ${TOTAL_ROUNDS}`;
       const tw = ctx.measureText(roundText).width;
       ctx.fillText(roundText, (W - tw) / 2, 7);
     }

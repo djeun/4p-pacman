@@ -9,7 +9,7 @@ const { Server } = require('socket.io');
 const { GameRoom, generateRoomCode } = require('./GameRoom');
 const { GameState }                  = require('./GameState');
 const { GameLoop }                   = require('./GameLoop');
-const { EVENTS, MAX_PLAYERS }        = require('./constants');
+const { EVENTS, MAX_PLAYERS }         = require('./constants');
 
 // ─────────────────────────────────────────────
 //  서버 설정
@@ -29,7 +29,8 @@ app.use(express.static(path.join(__dirname, '..', 'client')));
 //  Map<roomCode, { room: GameRoom, gameState: GameState|null, gameLoop: GameLoop|null }>
 // ─────────────────────────────────────────────
 
-const rooms = new Map();
+const rooms         = new Map();
+const socketRoomMap = new Map(); // socketId → roomCode (O(1) 역방향 조회)
 
 // ─────────────────────────────────────────────
 //  유틸리티
@@ -44,14 +45,17 @@ function createUniqueRoomCode() {
   return code;
 }
 
-/** 소켓이 속한 방 정보를 반환한다. */
+/** 닉네임을 정규화한다. 빈 문자열이면 'Player' 반환, 최대 12자 */
+function sanitizeName(name) {
+  const trimmed = (name || '').trim().slice(0, 12);
+  return trimmed || 'Player';
+}
+
+/** 소켓이 속한 방 정보를 반환한다. (O(1)) */
 function getRoomBySocket(socketId) {
-  for (const entry of rooms.values()) {
-    if (entry.room.players.has(socketId)) {
-      return entry;
-    }
-  }
-  return null;
+  const code = socketRoomMap.get(socketId);
+  if (!code) return null;
+  return rooms.get(code) || null;
 }
 
 // ─────────────────────────────────────────────
@@ -67,8 +71,9 @@ io.on('connection', (socket) => {
       const code = createUniqueRoomCode();
       const room = new GameRoom(code);
 
-      room.addPlayer(socket.id, name);
+      room.addPlayer(socket.id, sanitizeName(name));
       rooms.set(code, { room, gameState: null, gameLoop: null });
+      socketRoomMap.set(socket.id, code);
 
       socket.join(code);
 
@@ -94,8 +99,9 @@ io.on('connection', (socket) => {
         return socket.emit(EVENTS.ERROR, { message: '방이 가득 찼습니다.' });
       }
 
-      entry.room.addPlayer(socket.id, name);
+      entry.room.addPlayer(socket.id, sanitizeName(name));
       socket.join(code);
+      socketRoomMap.set(socket.id, code);
 
       // 방 전체(참가자 포함)에 갱신된 방 정보 브로드캐스트
       io.to(code).emit(EVENTS.ROOM_JOINED, entry.room.toJSON());
@@ -166,6 +172,8 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`[disconnect] ${socket.id}`);
 
+    socketRoomMap.delete(socket.id);
+
     const entry = getRoomBySocket(socket.id);
     if (!entry) return;
 
@@ -175,7 +183,6 @@ io.on('connection', (socket) => {
     if (room.state === 'playing' && gameState) {
       const player = gameState.players.get(socket.id);
       if (player && player.alive) {
-        // GameState 내부 _killPlayer 호출
         gameState._killPlayer(player);
 
         io.to(room.code).emit(EVENTS.PLAYER_DIED, {
@@ -183,26 +190,10 @@ io.on('connection', (socket) => {
           name:     player.name,
         });
 
-        // 승자가 결정됐으면 루프 종료
+        // 승자가 결정됐으면 라운드 종료 (game_end 포함)
         const winner = gameState.getWinner();
         if (winner !== null && gameLoop) {
-          gameLoop.stop();
-          gameState.finalizeScores();
-
-          const scores = Array.from(gameState.players.values()).map(p => ({
-            id:    p.id,
-            name:  p.name,
-            score: p.score,
-            rank:  p.rank,
-          }));
-
-          io.to(room.code).emit(EVENTS.ROUND_END, {
-            winnerId: winner.id,
-            round:    room.round,
-            scores,
-          });
-
-          room.state = 'waiting';
+          gameLoop.endRound(winner);
         }
       }
     }

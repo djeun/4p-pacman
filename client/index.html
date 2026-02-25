@@ -46,7 +46,10 @@
 
       <!-- 방 정보 -->
       <div id="room-info" class="room-info">
-        <p id="room-code" class="room-code-display"></p>
+        <div class="room-code-row">
+          <p id="room-code" class="room-code-display"></p>
+          <button id="copy-code-btn" class="btn btn-copy" title="룸 코드 복사" style="display:none;">복사</button>
+        </div>
 
         <!-- 참가자 목록 -->
         <div id="player-list-wrap">
@@ -78,6 +81,9 @@
       </div>
     </div>
   </div>
+
+  <!-- ========== 토스트 알림 ========== -->
+  <div id="toast-container"></div>
 
   <!-- ========== 스크립트 로드 순서 ========== -->
   <!-- 1. socket.io (서버가 자동 제공) -->

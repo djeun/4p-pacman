@@ -13,6 +13,7 @@ window.CONSTANTS = {
 
   // 게임
   TICK_RATE: 100, // ms
+  TOTAL_ROUNDS: 5,
   ROUND_SCORES: [300, 200, 100, 0],
 
   // 플레이어 시작 위치 (그리드 좌표, 각 코너)

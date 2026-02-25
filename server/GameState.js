@@ -293,20 +293,8 @@ class GameState {
   checkCollisions() {
     const alivePlayers = Array.from(this.players.values()).filter(p => p.alive);
 
-    // ── 동전 획득 ──
-    for (const player of alivePlayers) {
-      const coinIndex = this.attackCoins.findIndex(
-        c => c.x === player.x && c.y === player.y
-      );
-      if (coinIndex !== -1) {
-        this.attackCoins.splice(coinIndex, 1);
-        player.isRed    = true;
-        player.redTimer = ATTACK_DURATION;
-      }
-    }
-
-    // ── 플레이어 간 충돌 ──
-    // 같은 셀에 있는 쌍을 모두 찾는다.
+    // ── 플레이어 간 충돌 (동전 획득보다 먼저: 같은 틱에 동전 위로 이동한 경우
+    //    동전을 먹기 전 상태로 충돌 판정해야 함) ──
     for (let i = 0; i < alivePlayers.length; i++) {
       for (let j = i + 1; j < alivePlayers.length; j++) {
         const a = alivePlayers[i];
@@ -327,6 +315,19 @@ class GameState {
           this._bounceBack(a);
           this._bounceBack(b);
         }
+      }
+    }
+
+    // ── 동전 획득 (충돌 처리 후) ──
+    const stillAlive = Array.from(this.players.values()).filter(p => p.alive);
+    for (const player of stillAlive) {
+      const coinIndex = this.attackCoins.findIndex(
+        c => c.x === player.x && c.y === player.y
+      );
+      if (coinIndex !== -1) {
+        this.attackCoins.splice(coinIndex, 1);
+        player.isRed    = true;
+        player.redTimer = ATTACK_DURATION;
       }
     }
   }
@@ -411,14 +412,9 @@ class GameState {
     player.redTimer = 0;
     this.deadCount++;
     // rank: 먼저 죽을수록 높은 인덱스 (낮은 순위)
-    // 4명이면: 첫 사망=rank3, 두번째=rank2, 세번째=rank1
-    player.rank = this.players.size - 1 - (this.rankCounter++);
-    // rank를 ROUND_SCORES 인덱스로 변환:
-    // 마지막 생존자가 rank0(1위), 첫 사망자가 rank(n-1)(꼴찌)
-    // 여기서는 죽은 순서 기반으로 역순 rank 저장
-    // 실제 점수는 finalizeScores()에서 rank 인덱스로 조회
-    const totalPlayers = this.players.size;
-    player.rank = Math.min(totalPlayers - 1 - (this.rankCounter - 1), ROUND_SCORES.length - 1);
+    // 4명이면: 첫 사망=rank3(0pt), 두번째=rank2(100pt), 세번째=rank1(200pt)
+    this.rankCounter++;
+    player.rank = Math.min(this.players.size - this.rankCounter, ROUND_SCORES.length - 1);
   }
 
   /**

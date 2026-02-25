@@ -225,11 +225,11 @@ window.Renderer = class Renderer {
     ctx.textBaseline = 'top';
 
     // 생존자 수
-    ctx.fillText(`생존: ${alivePlayers.length}명`, 8, 7);
+    ctx.fillText(`Alive: ${alivePlayers.length}`, 8, 7);
 
     // 내 점수
     if (me) {
-      const scoreText = `점수: ${me.score ?? 0}`;
+      const scoreText = `Score: ${me.score ?? 0}`;
       const tw = ctx.measureText(scoreText).width;
       ctx.fillText(scoreText, W - tw - 8, 7);
     }
@@ -253,7 +253,7 @@ window.Renderer = class Renderer {
         ctx.font         = 'bold 32px monospace';
         ctx.textAlign    = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('관전 중', W / 2, H / 2);
+        ctx.fillText('SPECTATING', W / 2, H / 2);
 
         // 기본값 복원
         ctx.textAlign    = 'left';

@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function getValidName() {
     const name = nameInput ? nameInput.value.trim().slice(0, 12) : '';
     if (!name) {
-      showToast('닉네임을 입력해주세요.', 'info');
+      showToast('Please enter a nickname.', 'info');
       if (nameInput) nameInput.focus();
       return null;
     }
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     playerListEl.innerHTML = '';
     players.forEach((p) => {
       const li = document.createElement('li');
-      li.textContent = p.id === hostId ? `${p.name} (방장)` : p.name;
+      li.textContent = p.id === hostId ? `${p.name} (Host)` : p.name;
       playerListEl.appendChild(li);
     });
   }
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!name) return;
       const code = roomCodeInput ? roomCodeInput.value.trim().toUpperCase() : '';
       if (!code) {
-        showToast('룸 코드를 입력해주세요.', 'info');
+        showToast('Please enter a room code.', 'info');
         if (roomCodeInput) roomCodeInput.focus();
         return;
       }
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     copyCodeBtn.addEventListener('click', () => {
       if (!currentRoomCode) return;
       navigator.clipboard.writeText(currentRoomCode).then(() => {
-        showToast('룸 코드가 복사되었습니다!', 'info');
+        showToast('Room code copied!', 'info');
       }).catch(() => {
         showToast(currentRoomCode, 'info');
       });
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentRoomCode = data.code;
     gameClient.setMyId(socket.id);
 
-    if (roomCodeEl) roomCodeEl.textContent = `룸 코드: ${data.code}`;
+    if (roomCodeEl) roomCodeEl.textContent = `Room Code: ${data.code}`;
     if (copyCodeBtn) copyCodeBtn.style.display = 'inline-block';
     if (startBtn)   startBtn.style.display = 'inline-block';
     updatePlayerList(data.players, data.hostId);
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentRoomCode = data.code;
     gameClient.setMyId(socket.id);
 
-    if (roomCodeEl) roomCodeEl.textContent = `룸 코드: ${data.code}`;
+    if (roomCodeEl) roomCodeEl.textContent = `Room Code: ${data.code}`;
     if (copyCodeBtn) copyCodeBtn.style.display = 'inline-block';
     if (startBtn)   startBtn.style.display = isHost ? 'inline-block' : 'none';
     updatePlayerList(data.players, data.hostId);
@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 사망 알림
   socket.on(EVENTS.PLAYER_DIED, (data) => {
     const isMe = data.playerId === socket.id;
-    const msg  = isMe ? '당신이 사망했습니다!' : `${data.name} 사망`;
+    const msg  = isMe ? 'You died!' : `${data.name} died`;
     showToast(msg, 'death');
   });
 
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const { TOTAL_ROUNDS } = window.CONSTANTS;
       const title = document.createElement('h2');
-      title.textContent = `Round ${data.round} / ${TOTAL_ROUNDS} 종료`;
+      title.textContent = `Round ${data.round} / ${TOTAL_ROUNDS} Over`;
       scoreContent.appendChild(title);
 
       if (data.scores) {
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ul = document.createElement('ul');
         sorted.forEach((entry, i) => {
           const li = document.createElement('li');
-          li.textContent = `${i + 1}위 ${entry.name}: ${entry.score}점`;
+          li.textContent = `#${i + 1} ${entry.name}: ${entry.score} pts`;
           ul.appendChild(li);
         });
         scoreContent.appendChild(ul);
@@ -281,11 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreOverlay.style.display = 'flex';
 
       let remaining = 3;
-      countdown.textContent = `${remaining}초 후 계속...`;
+      countdown.textContent = `Continuing in ${remaining}s...`;
       const timer = setInterval(() => {
         remaining--;
         if (remaining > 0) {
-          countdown.textContent = `${remaining}초 후 계속...`;
+          countdown.textContent = `Continuing in ${remaining}s...`;
         } else {
           clearInterval(timer);
           scoreOverlay.style.display = 'none';
@@ -315,14 +315,14 @@ document.addEventListener('DOMContentLoaded', () => {
       gameEndContent.innerHTML = '';
 
       const title = document.createElement('h2');
-      title.textContent = '게임 종료';
+      title.textContent = 'Game Over';
       gameEndContent.appendChild(title);
 
       if (data.scores) {
         const ul = document.createElement('ul');
         data.scores.forEach((entry, i) => {
           const li = document.createElement('li');
-          li.textContent = `${i + 1}위 ${entry.name}: ${entry.score}점`;
+          li.textContent = `#${i + 1} ${entry.name}: ${entry.score} pts`;
           if (i === 0) li.classList.add('winner');
           ul.appendChild(li);
         });
@@ -330,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const backBtn = document.createElement('button');
-      backBtn.textContent = '로비로 돌아가기';
+      backBtn.textContent = 'Back to Lobby';
       backBtn.addEventListener('click', () => {
         gameEndOverlay.style.display = 'none';
         showLobby();
@@ -349,13 +349,13 @@ document.addEventListener('DOMContentLoaded', () => {
       inputHandler = null;
     }
     gameStarted = false;
-    showToast('서버와의 연결이 끊어졌습니다.', 'info');
+    showToast('Disconnected from server.', 'info');
     showLobby();
   });
 
   // 에러
   socket.on(EVENTS.ERROR, (data) => {
-    showToast(data.message || '오류가 발생했습니다.', 'info');
+    showToast(data.message || 'An error occurred.', 'info');
   });
 
   // ---------------------------------------------------------------------------

@@ -12,54 +12,54 @@
   <div id="lobby">
     <div class="lobby-card">
       <h1 class="lobby-title">4P PACMAN</h1>
-      <p class="lobby-subtitle">최대 4인 온라인 팩맨 배틀</p>
+      <p class="lobby-subtitle">Online Pac-Man Battle &mdash; up to 4 players</p>
 
-      <!-- 닉네임 입력 -->
+      <!-- Nickname -->
       <div class="form-group">
-        <label for="name-input">닉네임</label>
+        <label for="name-input">Nickname</label>
         <input
           id="name-input"
           type="text"
           maxlength="12"
-          placeholder="닉네임 입력"
+          placeholder="Enter nickname"
           autocomplete="off"
         />
       </div>
 
-      <!-- 방 만들기 -->
+      <!-- Create room -->
       <div class="form-group">
-        <button id="create-btn" class="btn btn-primary">방 만들기</button>
+        <button id="create-btn" class="btn btn-primary">Create Room</button>
       </div>
 
-      <!-- 룸 코드 참가 -->
+      <!-- Join by code -->
       <div class="form-group form-row">
         <input
           id="room-code-input"
           type="text"
           maxlength="4"
-          placeholder="룸 코드 4자리"
+          placeholder="4-digit room code"
           autocomplete="off"
           style="text-transform: uppercase;"
         />
-        <button id="join-btn" class="btn btn-secondary">참가하기</button>
+        <button id="join-btn" class="btn btn-secondary">Join</button>
       </div>
 
-      <!-- 방 정보 -->
+      <!-- Room info -->
       <div id="room-info" class="room-info">
         <div class="room-code-row">
           <p id="room-code" class="room-code-display"></p>
-          <button id="copy-code-btn" class="btn btn-copy" title="룸 코드 복사" style="display:none;">복사</button>
+          <button id="copy-code-btn" class="btn btn-copy" title="Copy room code" style="display:none;">Copy</button>
         </div>
 
-        <!-- 참가자 목록 -->
+        <!-- Player list -->
         <div id="player-list-wrap">
-          <h3>참가자</h3>
+          <h3>Players</h3>
           <ul id="player-list"></ul>
         </div>
 
-        <!-- 게임 시작 버튼 (방장만 표시) -->
+        <!-- Start button (host only) -->
         <button id="start-btn" class="btn btn-start" style="display: none;">
-          게임 시작
+          Start Game
         </button>
       </div>
     </div>

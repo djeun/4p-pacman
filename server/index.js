@@ -90,13 +90,13 @@ io.on('connection', (socket) => {
       const entry = rooms.get(code);
 
       if (!entry) {
-        return socket.emit(EVENTS.ERROR, { message: '존재하지 않는 방입니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'Room not found.' });
       }
       if (entry.room.state === 'playing') {
-        return socket.emit(EVENTS.ERROR, { message: '이미 게임이 진행 중인 방입니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'Game already in progress.' });
       }
       if (entry.room.isFull()) {
-        return socket.emit(EVENTS.ERROR, { message: '방이 가득 찼습니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'Room is full.' });
       }
 
       entry.room.addPlayer(socket.id, sanitizeName(name));
@@ -116,19 +116,19 @@ io.on('connection', (socket) => {
     try {
       const entry = getRoomBySocket(socket.id);
       if (!entry) {
-        return socket.emit(EVENTS.ERROR, { message: '방에 속해 있지 않습니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'You are not in a room.' });
       }
 
       const { room } = entry;
 
       if (!room.isHost(socket.id)) {
-        return socket.emit(EVENTS.ERROR, { message: '방장만 게임을 시작할 수 있습니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'Only the host can start the game.' });
       }
       if (!room.canStart()) {
-        return socket.emit(EVENTS.ERROR, { message: '게임 시작에 최소 2명이 필요합니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'At least 2 players required to start.' });
       }
       if (room.state === 'playing') {
-        return socket.emit(EVENTS.ERROR, { message: '이미 게임이 진행 중입니다.' });
+        return socket.emit(EVENTS.ERROR, { message: 'Game is already in progress.' });
       }
 
       // 이전 루프가 남아 있으면 정리

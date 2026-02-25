@@ -12,13 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---------------------------------------------------------------------------
   // 클라이언트 상태
   // ---------------------------------------------------------------------------
-  const gameClient     = new window.GameClient();
-  let   renderer       = null;
-  let   inputHandler   = null;
-  let   rafId          = null;
-  let   isHost         = false;
-  let   gameStarted    = false;
+  const gameClient      = new window.GameClient();
+  let   renderer        = null;
+  let   inputHandler    = null;
+  let   rafId           = null;
+  let   isHost          = false;
+  let   gameStarted     = false;
   let   currentRoomCode = null;
+  let   isGameOver      = false;   // GAME_END 수신 여부
+  let   savedTotalRounds = 5;      // 현재 게임의 총 라운드 수
 
   // ---------------------------------------------------------------------------
   // DOM 참조
@@ -228,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 게임 상태 수신 (매 틱 100ms마다)
   socket.on(EVENTS.GAME_STATE, (state) => {
+    if (state.totalRounds) savedTotalRounds = state.totalRounds;
     gameClient.updateState(state);
 
     // 첫 수신 시 게임 화면으로 전환 + 루프 시작
@@ -252,68 +255,75 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 라운드 종료
   socket.on(EVENTS.ROUND_END, (data) => {
-    // data: { scores: [{id, name, score}, ...], round }
-
     // InputHandler 비활성화
     if (inputHandler) {
       inputHandler.destroy();
       inputHandler = null;
     }
 
-    // 점수 화면 표시
-    if (scoreOverlay && scoreContent) {
-      scoreContent.innerHTML = '';
+    if (!(scoreOverlay && scoreContent)) return;
 
-      const { TOTAL_ROUNDS } = window.CONSTANTS;
-      const title = document.createElement('h2');
-      title.textContent = `Round ${data.round} / ${TOTAL_ROUNDS} Over`;
-      scoreContent.appendChild(title);
+    scoreContent.innerHTML = '';
 
-      if (data.scores) {
-        const sorted = [...data.scores].sort((a, b) => b.score - a.score);
-        const ul = document.createElement('ul');
-        sorted.forEach((entry, i) => {
-          const li = document.createElement('li');
-          li.textContent = `#${i + 1} ${entry.name}: ${entry.score} pts`;
-          ul.appendChild(li);
-        });
-        scoreContent.appendChild(ul);
-      }
+    const totalRounds = data.totalRounds || savedTotalRounds;
+    const isLastRound = data.round >= totalRounds;
 
-      // 카운트다운 표시
-      const countdown = document.createElement('p');
-      countdown.style.cssText = 'color:#aaa;font-size:0.85rem;';
-      scoreContent.appendChild(countdown);
+    const title = document.createElement('h2');
+    title.textContent = `Round ${data.round} / ${totalRounds} Over`;
+    scoreContent.appendChild(title);
 
-      scoreOverlay.style.display = 'flex';
+    if (data.scores) {
+      const sorted = [...data.scores].sort((a, b) => b.score - a.score);
+      const ul = document.createElement('ul');
+      sorted.forEach((entry, i) => {
+        const li = document.createElement('li');
+        li.textContent = `#${i + 1} ${entry.name}: ${entry.score} pts`;
+        ul.appendChild(li);
+      });
+      scoreContent.appendChild(ul);
+    }
 
+    const countdown = document.createElement('p');
+    countdown.style.cssText = 'color:#aaa;font-size:0.85rem;';
+    countdown.textContent = isLastRound ? 'Game over...' : 'Next round in 3s...';
+    scoreContent.appendChild(countdown);
+
+    scoreOverlay.style.display = 'flex';
+
+    if (!isLastRound) {
       let remaining = 3;
-      countdown.textContent = `Continuing in ${remaining}s...`;
       const timer = setInterval(() => {
         remaining--;
         if (remaining > 0) {
-          countdown.textContent = `Continuing in ${remaining}s...`;
+          countdown.textContent = `Next round in ${remaining}s...`;
         } else {
           clearInterval(timer);
+          // GAME_END가 먼저 도착해서 처리됐으면 중단
+          if (isGameOver) return;
           scoreOverlay.style.display = 'none';
-          gameStarted = false;
           stopGameLoop();
-          showLobby();
-
-          if (startBtn) startBtn.style.display = isHost ? 'inline-block' : 'none';
+          gameStarted = false;
+          // 방장이 자동으로 다음 라운드 시작
+          if (isHost) {
+            socket.emit(EVENTS.READY, { totalRounds: savedTotalRounds });
+          }
         }
       }, 1000);
     }
+    // isLastRound인 경우 GAME_END 이벤트가 곧 도착해서 처리
   });
 
   // 게임 종료 (최종 결과)
   socket.on(EVENTS.GAME_END, (data) => {
-    // data: { scores: [{id, name, score, rank}, ...] }
+    isGameOver = true;
 
     if (inputHandler) {
       inputHandler.destroy();
       inputHandler = null;
     }
+
+    // 라운드 종료 overlay가 떠 있으면 닫기
+    if (scoreOverlay) scoreOverlay.style.display = 'none';
 
     stopGameLoop();
     gameStarted = false;
@@ -340,6 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
       backBtn.textContent = 'Back to Lobby';
       backBtn.addEventListener('click', () => {
         gameEndOverlay.style.display = 'none';
+        isGameOver = false;
         showLobby();
       });
       gameEndContent.appendChild(backBtn);

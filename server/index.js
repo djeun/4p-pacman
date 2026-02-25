@@ -137,9 +137,11 @@ io.on('connection', (socket) => {
       }
 
       // 플레이어 목록으로 GameState 초기화
+      // 누적 점수를 새 라운드 GameState에 전달
       const playerList = Array.from(room.players.values()).map(p => ({
-        id:   p.id,
-        name: p.name,
+        id:    p.id,
+        name:  p.name,
+        score: p.score || 0,
       }));
 
       const gameState = new GameState(playerList);

@@ -71,6 +71,12 @@ class GameLoop {
     // 최종 점수 계산
     this.gameState.finalizeScores();
 
+    // 누적 점수를 room.players에 반영 (다음 라운드 GameState 초기화 시 전달)
+    for (const [id, gp] of this.gameState.players) {
+      const rp = this.room.players.get(id);
+      if (rp) rp.score = gp.score;
+    }
+
     const scores = Array.from(this.gameState.players.values()).map(p => ({
       id:    p.id,
       name:  p.name,
@@ -82,7 +88,8 @@ class GameLoop {
 
     this.io.to(this.room.code).emit(EVENTS.ROUND_END, {
       winnerId,
-      round: this.room.round,
+      round:       this.room.round,
+      totalRounds: this.room.totalRounds,
       scores,
     });
 

@@ -90,7 +90,7 @@ class GameState {
         isRed:     false,
         redTimer:  0,      // 남은 빨간 상태 틱
         alive:     true,
-        score:     0,
+        score:     p.score || 0,  // 이전 라운드 누적 점수 이어받기
         rank:      null,   // 탈락 순위 (사망 시 설정)
         moveAccum: 0,      // 이동 누산기 (1.0 이상이면 실제 이동)
       });

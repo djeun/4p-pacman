@@ -5,11 +5,12 @@ const { MAX_PLAYERS } = require('./constants');
 
 class GameRoom {
   constructor(code) {
-    this.code    = code;
-    this.players = new Map(); // socketId → { id, name, score }
-    this.hostId  = null;
-    this.state   = 'waiting'; // 'waiting' | 'playing'
-    this.round   = 0;
+    this.code        = code;
+    this.players     = new Map(); // socketId → { id, name, score }
+    this.hostId      = null;
+    this.state       = 'waiting'; // 'waiting' | 'playing'
+    this.round       = 0;
+    this.totalRounds = 5;         // 방장이 설정 가능, 기본값 5
   }
 
   /**
@@ -86,10 +87,11 @@ class GameRoom {
    */
   toJSON() {
     return {
-      code:    this.code,
-      hostId:  this.hostId,
-      state:   this.state,
-      players: Array.from(this.players.values()),
+      code:        this.code,
+      hostId:      this.hostId,
+      state:       this.state,
+      players:     Array.from(this.players.values()),
+      totalRounds: this.totalRounds,
     };
   }
 }

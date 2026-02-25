@@ -31,8 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const joinBtn        = document.getElementById('join-btn');
   const playerListEl   = document.getElementById('player-list');
   const roomCodeEl     = document.getElementById('room-code');
-  const copyCodeBtn    = document.getElementById('copy-code-btn');
-  const startBtn       = document.getElementById('start-btn');
+  const copyCodeBtn      = document.getElementById('copy-code-btn');
+  const roundCountWrap   = document.getElementById('round-count-wrap');
+  const roundCountInput  = document.getElementById('round-count-input');
+  const startBtn         = document.getElementById('start-btn');
   const gameCanvas     = document.getElementById('game-canvas');
   const scoreOverlay   = document.getElementById('score-overlay');
   const scoreContent   = document.getElementById('score-content');
@@ -148,7 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 게임 시작 (방장만 가능)
   if (startBtn) {
     startBtn.addEventListener('click', () => {
-      socket.emit(EVENTS.READY);
+      const totalRounds = roundCountInput ? (parseInt(roundCountInput.value) || 5) : 5;
+      socket.emit(EVENTS.READY, { totalRounds });
     });
   }
 
@@ -199,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (roomCodeEl) roomCodeEl.textContent = `Room Code: ${data.code}`;
     if (copyCodeBtn) copyCodeBtn.style.display = 'inline-block';
+    if (roundCountWrap) roundCountWrap.style.display = 'block';
     if (startBtn)   startBtn.style.display = 'inline-block';
     updatePlayerList(data.players, data.hostId);
   });
@@ -208,13 +212,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 게임 중 수신된 ROOM_JOINED는 로비 UI 갱신 건너뜀
     if (gameStarted) return;
 
-    // data: { code, hostId, players }
+    // data: { code, hostId, players, totalRounds }
     isHost = data.hostId === socket.id;
     currentRoomCode = data.code;
     gameClient.setMyId(socket.id);
 
     if (roomCodeEl) roomCodeEl.textContent = `Room Code: ${data.code}`;
     if (copyCodeBtn) copyCodeBtn.style.display = 'inline-block';
+    // 라운드 설정은 방장만 표시
+    if (roundCountWrap) roundCountWrap.style.display = isHost ? 'block' : 'none';
+    if (roundCountInput && data.totalRounds) roundCountInput.value = data.totalRounds;
     if (startBtn)   startBtn.style.display = isHost ? 'inline-block' : 'none';
     updatePlayerList(data.players, data.hostId);
   });

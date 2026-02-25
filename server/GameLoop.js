@@ -1,7 +1,7 @@
 // server/GameLoop.js
 // 서버사이드 게임 루프 (100ms 틱 기반)
 
-const { TICK_RATE, EVENTS, TOTAL_ROUNDS } = require('./constants');
+const { TICK_RATE, EVENTS } = require('./constants');
 
 class GameLoop {
   /**
@@ -46,10 +46,10 @@ class GameLoop {
 
     this.gameState.update();
 
-    // 현재 상태 브로드캐스트 (round 필드 포함)
+    // 현재 상태 브로드캐스트 (round, totalRounds 포함)
     this.io.to(this.room.code).emit(
       EVENTS.GAME_STATE,
-      { ...this.gameState.toJSON(), round: this.room.round }
+      { ...this.gameState.toJSON(), round: this.room.round, totalRounds: this.room.totalRounds }
     );
 
     // 라운드 종료 확인
@@ -90,7 +90,7 @@ class GameLoop {
     this.room.state = 'waiting';
 
     // 총 라운드 소진 시 GAME_END 발송
-    if (this.room.round >= TOTAL_ROUNDS) {
+    if (this.room.round >= this.room.totalRounds) {
       const sortedScores = [...scores].sort((a, b) => b.score - a.score);
       this.io.to(this.room.code).emit(EVENTS.GAME_END, {
         scores: sortedScores,

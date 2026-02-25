@@ -272,6 +272,24 @@ canvas#game-canvas {
   margin-top: 8px;
 }
 
+/* ---------- 라운드 수 설정 ---------- */
+.round-count-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-count-row input[type="number"] {
+  width: 72px;
+  text-align: center;
+  padding: 6px 8px;
+}
+
+.round-count-hint {
+  font-size: 0.85rem;
+  color: #888;
+}
+
 /* ---------- 룸 코드 행 (코드 + 복사 버튼) ---------- */
 .room-code-row {
   display: flex;

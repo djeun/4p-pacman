@@ -112,7 +112,7 @@ io.on('connection', (socket) => {
   });
 
   // ── ready (방장이 게임 시작) ───────────────────
-  socket.on(EVENTS.READY, () => {
+  socket.on(EVENTS.READY, ({ totalRounds } = {}) => {
     try {
       const entry = getRoomBySocket(socket.id);
       if (!entry) {
@@ -144,6 +144,14 @@ io.on('connection', (socket) => {
 
       const gameState = new GameState(playerList);
       const gameLoop  = new GameLoop(room, gameState, io);
+
+      // 첫 라운드 시작 시에만 totalRounds 설정 (이후 라운드는 유지)
+      if (room.round === 0 && totalRounds) {
+        const parsed = parseInt(totalRounds);
+        if (!isNaN(parsed) && parsed >= 1 && parsed <= 20) {
+          room.totalRounds = parsed;
+        }
+      }
 
       entry.gameState = gameState;
       entry.gameLoop  = gameLoop;

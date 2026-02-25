@@ -14,6 +14,7 @@ const {
   COIN_SPAWN_INTERVAL_MAX,
   SHRINK_START_TICK,
   ROUND_SCORES,
+  PLAYER_SPEED,
 } = require('./constants');
 
 class GameState {
@@ -91,6 +92,7 @@ class GameState {
         alive:     true,
         score:     0,
         rank:      null,   // 탈락 순위 (사망 시 설정)
+        moveAccum: 0,      // 이동 누산기 (1.0 이상이면 실제 이동)
       });
     });
   }
@@ -228,6 +230,11 @@ class GameState {
   movePlayer(player) {
     player.prevX = player.x;
     player.prevY = player.y;
+
+    // 이동 누산기: PLAYER_SPEED만큼 누적, 1.0 미만이면 이번 틱은 이동 없음
+    player.moveAccum += PLAYER_SPEED;
+    if (player.moveAccum < 0.999) return;
+    player.moveAccum -= 1.0;
 
     if (!player.direction) return;
 

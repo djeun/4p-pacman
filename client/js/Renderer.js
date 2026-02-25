@@ -189,6 +189,32 @@ window.Renderer = class Renderer {
       ctx.stroke();
       ctx.restore();
     }
+
+    // 플레이어 이름 라벨
+    const isMe = player.id === myId;
+    const labelY = cy - radius - (isMe ? 22 : 6);
+
+    ctx.save();
+    ctx.font         = 'bold 10px monospace';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'bottom';
+
+    if (isMe) {
+      // "▼ YOU" 표시 (노란색 삼각 화살표)
+      ctx.fillStyle = '#FFD700';
+      ctx.font      = '11px monospace';
+      ctx.fillText('▼', cx, cy - radius - 6);
+    }
+
+    // 이름 텍스트 (반투명 배경 + 이름)
+    const nameText = isMe ? `[${player.name}]` : player.name;
+    ctx.font = isMe ? 'bold 10px monospace' : '9px monospace';
+    const tw = ctx.measureText(nameText).width;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(cx - tw / 2 - 2, labelY - 11, tw + 4, 13);
+    ctx.fillStyle = isMe ? '#FFD700' : '#cccccc';
+    ctx.fillText(nameText, cx, labelY);
+    ctx.restore();
   }
 
   // ---------------------------------------------------------------------------
@@ -237,7 +263,8 @@ window.Renderer = class Renderer {
     // 라운드 번호 (state.round가 있는 경우)
     if (state.round != null) {
       const { TOTAL_ROUNDS } = window.CONSTANTS;
-      const roundText = `Round ${state.round} / ${TOTAL_ROUNDS}`;
+      const total = state.totalRounds || TOTAL_ROUNDS;
+      const roundText = `Round ${state.round} / ${total}`;
       const tw = ctx.measureText(roundText).width;
       ctx.fillText(roundText, (W - tw) / 2, 7);
     }

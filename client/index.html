@@ -57,6 +57,15 @@
           <ul id="player-list"></ul>
         </div>
 
+        <!-- Round count (host only) -->
+        <div id="round-count-wrap" class="form-group" style="display:none;">
+          <label for="round-count-input">Total Rounds</label>
+          <div class="round-count-row">
+            <input id="round-count-input" type="number" min="1" max="20" value="5" />
+            <span class="round-count-hint">rounds</span>
+          </div>
+        </div>
+
         <!-- Start button (host only) -->
         <button id="start-btn" class="btn btn-start" style="display: none;">
           Start Game

@@ -1,0 +1,287 @@
+/* ============================================================
+   style.css — 4P Pacman Battle
+   다크 테마, 팩맨 게임 느낌
+   ============================================================ */
+
+/* ---------- 기초 리셋 & 전체 ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  overflow: hidden;
+}
+
+/* ---------- 로비 화면 ---------- */
+#lobby {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+}
+
+.lobby-card {
+  background: #0d0d0d;
+  border: 2px solid #FFD700;
+  border-radius: 12px;
+  padding: 40px 48px;
+  min-width: 340px;
+  max-width: 420px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 0 24px rgba(255, 215, 0, 0.25);
+}
+
+.lobby-title {
+  text-align: center;
+  font-size: 2.4rem;
+  letter-spacing: 0.2em;
+  color: #FFD700;
+  text-shadow: 0 0 12px #FFD700;
+}
+
+.lobby-subtitle {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-top: -12px;
+}
+
+/* ---------- 폼 그룹 ---------- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  color: #ccc;
+  letter-spacing: 0.05em;
+}
+
+.form-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Input ---------- */
+input[type="text"] {
+  background: #111;
+  border: 1.5px solid #333;
+  border-radius: 6px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 9px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+  border-color: #FFD700;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+
+input[type="text"]::placeholder {
+  color: #555;
+}
+
+/* ---------- 버튼 ---------- */
+.btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: #FFD700;
+  color: #000;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  background: #333;
+  color: #FFD700;
+  border: 1.5px solid #FFD700;
+  flex-shrink: 0;
+}
+
+.btn-secondary:hover {
+  background: #444;
+}
+
+.btn-start {
+  background: #FF3333;
+  color: #fff;
+  width: 100%;
+  font-size: 1.1rem;
+  padding: 12px;
+  margin-top: 4px;
+  box-shadow: 0 0 12px rgba(255, 51, 51, 0.5);
+}
+
+.btn-start:hover {
+  filter: brightness(1.2);
+}
+
+/* ---------- 방 정보 패널 ---------- */
+.room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid #222;
+  padding-top: 16px;
+}
+
+.room-code-display {
+  font-size: 1.1rem;
+  color: #FFD700;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+#player-list-wrap h3 {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 6px;
+  letter-spacing: 0.08em;
+}
+
+#player-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+#player-list li {
+  background: #1a1a1a;
+  border-left: 3px solid #FFD700;
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  border-radius: 0 4px 4px 0;
+}
+
+/* ---------- 게임 화면 ---------- */
+#game {
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: none; /* 게임 중 커서 숨김 */
+}
+
+.game-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+canvas#game-canvas {
+  display: block;
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  image-rendering: pixelated;
+}
+
+/* ---------- 오버레이 (점수 / 게임 종료) ---------- */
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.overlay-card {
+  background: #0d0d0d;
+  border: 2px solid #FFD700;
+  border-radius: 10px;
+  padding: 32px 40px;
+  min-width: 260px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 0 24px rgba(255, 215, 0, 0.3);
+}
+
+.overlay-card h2 {
+  color: #FFD700;
+  font-size: 1.5rem;
+  letter-spacing: 0.08em;
+}
+
+.overlay-card ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.overlay-card ul li {
+  font-size: 1rem;
+  padding: 4px 8px;
+  border-left: 3px solid #555;
+}
+
+.overlay-card ul li.winner {
+  border-left-color: #FFD700;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.overlay-card button {
+  margin-top: 8px;
+}
+
+/* ---------- 스크롤바 (플레이어 목록) ---------- */
+#player-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#player-list::-webkit-scrollbar-track {
+  background: #000;
+}
+
+#player-list::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 2px;
+}

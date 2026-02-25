@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>4P Pacman Battle</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== 로비 화면 ========== -->
+  <div id="lobby">
+    <div class="lobby-card">
+      <h1 class="lobby-title">4P PACMAN</h1>
+      <p class="lobby-subtitle">최대 4인 온라인 팩맨 배틀</p>
+
+      <!-- 닉네임 입력 -->
+      <div class="form-group">
+        <label for="name-input">닉네임</label>
+        <input
+          id="name-input"
+          type="text"
+          maxlength="12"
+          placeholder="닉네임 입력"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- 방 만들기 -->
+      <div class="form-group">
+        <button id="create-btn" class="btn btn-primary">방 만들기</button>
+      </div>
+
+      <!-- 룸 코드 참가 -->
+      <div class="form-group form-row">
+        <input
+          id="room-code-input"
+          type="text"
+          maxlength="4"
+          placeholder="룸 코드 4자리"
+          autocomplete="off"
+          style="text-transform: uppercase;"
+        />
+        <button id="join-btn" class="btn btn-secondary">참가하기</button>
+      </div>
+
+      <!-- 방 정보 -->
+      <div id="room-info" class="room-info">
+        <p id="room-code" class="room-code-display"></p>
+
+        <!-- 참가자 목록 -->
+        <div id="player-list-wrap">
+          <h3>참가자</h3>
+          <ul id="player-list"></ul>
+        </div>
+
+        <!-- 게임 시작 버튼 (방장만 표시) -->
+        <button id="start-btn" class="btn btn-start" style="display: none;">
+          게임 시작
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 게임 화면 ========== -->
+  <div id="game" style="display: none;">
+    <div class="game-wrap">
+      <canvas id="game-canvas" width="672" height="672"></canvas>
+
+      <!-- 라운드 종료 점수 오버레이 -->
+      <div id="score-overlay" class="overlay" style="display: none;">
+        <div id="score-content" class="overlay-card"></div>
+      </div>
+
+      <!-- 게임 종료 최종 결과 오버레이 -->
+      <div id="game-end-overlay" class="overlay" style="display: none;">
+        <div id="game-end-content" class="overlay-card"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 스크립트 로드 순서 ========== -->
+  <!-- 1. socket.io (서버가 자동 제공) -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- 2. 공유 상수 -->
+  <script src="js/constants.js"></script>
+  <!-- 3. 게임 클라이언트 상태 -->
+  <script src="js/GameClient.js"></script>
+  <!-- 4. 키보드 입력 처리 -->
+  <script src="js/InputHandler.js"></script>
+  <!-- 5. 캔버스 렌더러 -->
+  <script src="js/Renderer.js"></script>
+  <!-- 6. 진입점 -->
+  <script src="js/main.js"></script>
+
+</body>
+</html>

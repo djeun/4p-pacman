@@ -12,8 +12,9 @@ const {
   COIN_MIN_DISTANCE,
   COIN_SPAWN_INTERVAL_MIN,
   COIN_SPAWN_INTERVAL_MAX,
-  SHRINK_START_TICK,
   ROUND_SCORES,
+  PLAYER_SPEED,
+  PLAYER_SPEED_RED,
 } = require('./constants');
 
 class GameState {
@@ -91,6 +92,7 @@ class GameState {
         alive:     true,
         score:     p.score || 0,  // 이전 라운드 누적 점수 이어받기
         rank:      null,   // 탈락 순위 (사망 시 설정)
+        moveAccum: 0,      // 이동 누산기 (속도 조절용)
       });
     });
   }
@@ -229,21 +231,28 @@ class GameState {
     player.prevX = player.x;
     player.prevY = player.y;
 
-    if (!player.direction) return;
+    const speed = player.isRed ? PLAYER_SPEED_RED : PLAYER_SPEED;
+    player.moveAccum += speed;
 
-    let nx = player.x;
-    let ny = player.y;
+    while (player.moveAccum >= 1.0) {
+      player.moveAccum -= 1.0;
 
-    switch (player.direction) {
-      case 'up':    ny -= 1; break;
-      case 'down':  ny += 1; break;
-      case 'left':  nx -= 1; break;
-      case 'right': nx += 1; break;
-    }
+      if (!player.direction) continue;
 
-    if (!this.isWall(nx, ny)) {
-      player.x = nx;
-      player.y = ny;
+      let nx = player.x;
+      let ny = player.y;
+
+      switch (player.direction) {
+        case 'up':    ny -= 1; break;
+        case 'down':  ny += 1; break;
+        case 'left':  nx -= 1; break;
+        case 'right': nx += 1; break;
+      }
+
+      if (!this.isWall(nx, ny)) {
+        player.x = nx;
+        player.y = ny;
+      }
     }
   }
 
@@ -338,22 +347,7 @@ class GameState {
    * 축소된 영역에 있는 플레이어는 즉시 사망.
    */
   applyShrink() {
-    if (this.tick < SHRINK_START_TICK) return;
-
-    const ticksSinceShrink = this.tick - SHRINK_START_TICK;
-    const newBorder = Math.floor(ticksSinceShrink / 50);
-
-    if (newBorder <= this.shrinkBorder) return;
-
-    this.shrinkBorder = newBorder;
-
-    // 축소된 영역에 있는 플레이어 사망 처리
-    for (const player of this.players.values()) {
-      if (!player.alive) continue;
-      if (this.isWall(player.x, player.y)) {
-        this._killPlayer(player);
-      }
-    }
+    // Shrink disabled — rounds have no time limit
   }
 
   // ─────────────────────────────────────────────

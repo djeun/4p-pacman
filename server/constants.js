@@ -8,7 +8,8 @@ module.exports = {
   CELL_SIZE: 32,
 
   // 플레이어
-  PLAYER_SPEED: 1,          // 틱당 1셀 이동
+  PLAYER_SPEED:     1.0,    // 일반 속도 (틱당 누산)
+  PLAYER_SPEED_RED: 1.2,    // 빨간 상태 속도 (+20%)
   MAX_PLAYERS: 4,
   ATTACK_DURATION: 49,      // 틱 (~10초 at 204ms tick)
 

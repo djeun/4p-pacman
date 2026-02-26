@@ -1,40 +1,32 @@
 // client/js/GameClient.js
-// Client game state with continuous sub-cell movement for smooth visuals.
+// Client game state with display-position smoothing.
 
 window.GameClient = class GameClient {
   constructor() {
-    /** @type {object|null} Latest state from server */
-    this.gameState    = null;
-    this.prevState    = null;
-    this.lastTickTime = 0;
-    this.myId         = null;
+    this.gameState      = null;
+    this.lastTickTime   = 0;
+    this.myId           = null;
+    // Float display positions per player, updated every frame
+    this._displayPos    = new Map(); // id → {x, y}
+    this._lastFrameTime = null;
   }
 
   setMyId(id) {
     this.myId = id;
   }
 
-  /**
-   * Called on every game_state event from the server.
-   */
   updateState(newState) {
-    this.prevState    = this.gameState;
     this.gameState    = newState;
     this.lastTickTime = performance.now();
   }
 
   /**
-   * Returns the render-ready state with sub-cell player positions.
+   * Returns render-ready state with smoothly interpolated player positions.
    *
-   * Strategy:
-   *  - Server sends moveCooldown: counts down interval-1 → 0, then player moves.
-   *  - subTick = (interval - 1) - moveCooldown  (0 = just moved, interval-1 = about to move)
-   *  - fraction = (subTick + tickElapsed) / interval  — always 0..1, progresses each frame
-   *  - rendered pos = server pos + direction * fraction
-   *
-   *  Wall guard: if previous and current server position are identical AND
-   *  moveCooldown is NOT counting down from a fresh move, the player is blocked —
-   *  clamp fraction to 0 so we don't draw them inside the wall.
+   * Each player has a "display position" (float x/y) that chases the server
+   * position at exactly the player's movement speed.  This keeps motion
+   * perfectly smooth regardless of server tick timing, and automatically
+   * handles wall blocks (server pos stays the same → display pos stops).
    *
    * @param {number} now - performance.now()
    */
@@ -43,54 +35,52 @@ window.GameClient = class GameClient {
 
     const { TICK_RATE, PLAYER_MOVE_INTERVAL, PLAYER_MOVE_INTERVAL_RED } = window.CONSTANTS;
 
-    // Fractional progress within the current 34ms server tick (0..1)
-    const tickElapsed = Math.min(now - this.lastTickTime, TICK_RATE) / TICK_RATE;
+    // Time since last rendered frame (capped to avoid large jumps after tab switch)
+    const dt = this._lastFrameTime !== null
+      ? Math.min(now - this._lastFrameTime, 100)
+      : 0;
+    this._lastFrameTime = now;
 
-    const interpolatedPlayers = this.gameState.players.map((player) => {
-      if (!player.alive || !player.direction) return player;
-
-      const interval  = player.isRed ? PLAYER_MOVE_INTERVAL_RED : PLAYER_MOVE_INTERVAL;
-      const cooldown  = player.moveCooldown ?? 0;
-
-      // subTick: ticks elapsed since last move (0 = just moved, interval-1 = about to move)
-      const subTick = (interval - 1) - cooldown;
-
-      // Did the player actually move this tick? Compare with prev state.
-      const prev = this.prevState
-        ? this.prevState.players.find(p => p.id === player.id)
-        : null;
-      const movedThisTick = prev && (prev.x !== player.x || prev.y !== player.y);
-
-      // If cooldown == interval-1, player JUST moved this tick (subTick=0).
-      // If position hasn't changed and cooldown is NOT at max (not a fresh move tick),
-      // the player is blocked by a wall — freeze at current cell.
-      const freshMove = (cooldown === interval - 1);
-      const blockedByWall = prev && !movedThisTick && !freshMove;
-
-      if (blockedByWall) {
-        // Player tried to move but was blocked; don't offset into wall
+    const players = this.gameState.players.map((player) => {
+      if (!player.alive) {
+        this._displayPos.delete(player.id);
         return player;
       }
 
-      // Fraction into the current step: 0 (just moved) → approaching 1 (next move)
-      const fraction = Math.min((subTick + tickElapsed) / interval, 0.99);
-
-      // Direction vector for the NEXT step (where the player will move next)
-      let dx = 0, dy = 0;
-      switch (player.direction) {
-        case 'up':    dy = -1; break;
-        case 'down':  dy =  1; break;
-        case 'left':  dx = -1; break;
-        case 'right': dx =  1; break;
+      // Initialise display position from server on first sight
+      let disp = this._displayPos.get(player.id);
+      if (!disp) {
+        disp = { x: player.x, y: player.y };
+        this._displayPos.set(player.id, disp);
+        return { ...player, x: disp.x, y: disp.y };
       }
 
-      return {
-        ...player,
-        x: player.x + dx * fraction,
-        y: player.y + dy * fraction,
-      };
+      const tdx  = player.x - disp.x;
+      const tdy  = player.y - disp.y;
+      const dist = Math.abs(tdx) + Math.abs(tdy);
+
+      if (dist > 1.5) {
+        // Large jump (respawn / teleport) → snap immediately
+        disp.x = player.x;
+        disp.y = player.y;
+      } else if (dist > 0.001) {
+        // Move toward server position at natural movement speed
+        const interval     = player.isRed ? PLAYER_MOVE_INTERVAL_RED : PLAYER_MOVE_INTERVAL;
+        const cellDuration = interval * TICK_RATE; // ms to cross one cell
+        const step         = dt / cellDuration;    // cells to advance this frame
+
+        if (step >= dist) {
+          disp.x = player.x;
+          disp.y = player.y;
+        } else {
+          disp.x += (tdx / dist) * step;
+          disp.y += (tdy / dist) * step;
+        }
+      }
+
+      return { ...player, x: disp.x, y: disp.y };
     });
 
-    return { ...this.gameState, players: interpolatedPlayers };
+    return { ...this.gameState, players };
   }
 };

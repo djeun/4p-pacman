@@ -9,6 +9,8 @@ window.CONSTANTS = {
 
   // 플레이어
   MAX_PLAYERS: 4,
+  PLAYER_MOVE_INTERVAL:     6,  // ticks between moves (normal)
+  PLAYER_MOVE_INTERVAL_RED: 5,  // ticks between moves (red)
   ATTACK_DURATION: 294, // ticks (~10s at 34ms/tick)
 
   // 게임

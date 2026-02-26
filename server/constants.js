@@ -8,19 +8,19 @@ module.exports = {
   CELL_SIZE: 32,
 
   // 플레이어
-  PLAYER_SPEED:     1.0,    // 일반 속도 (틱당 누산)
-  PLAYER_SPEED_RED: 1.2,    // 빨간 상태 속도 (+20%)
+  PLAYER_MOVE_INTERVAL:     6,  // normal: move every 6 ticks (6×34ms = 204ms/cell)
+  PLAYER_MOVE_INTERVAL_RED: 5,  // red:    move every 5 ticks (5×34ms = 170ms/cell, +20%)
   MAX_PLAYERS: 4,
-  ATTACK_DURATION: 49,      // 틱 (~10초 at 204ms tick)
+  ATTACK_DURATION: 294,         // ticks (~10s at 34ms/tick)
 
   // 동전
   MAX_ATTACK_COINS: 2,
-  COIN_MIN_DISTANCE: 2,         // 플레이어와 최소 거리(셀) — 작은 맵
-  COIN_SPAWN_INTERVAL_MIN: 5,   // 최소 5틱 후
-  COIN_SPAWN_INTERVAL_MAX: 30,  // 최대 30틱 후
+  COIN_MIN_DISTANCE: 2,
+  COIN_SPAWN_INTERVAL_MIN: 30,  // ~1s
+  COIN_SPAWN_INTERVAL_MAX: 180, // ~6s
 
   // 게임
-  TICK_RATE: 204,               // ms (143ms / 0.7 ≈ 204ms, 70% 속도)
+  TICK_RATE: 34,                // ms — small tick for constant per-player move intervals
   SHRINK_START_TICK: 999999,    // 사실상 맵 축소 없음 (무제한)
   TOTAL_ROUNDS: 5,              // 총 라운드 수
   ROUND_SCORES: [300, 200, 100, 0],

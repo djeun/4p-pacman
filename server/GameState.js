@@ -13,8 +13,8 @@ const {
   COIN_SPAWN_INTERVAL_MIN,
   COIN_SPAWN_INTERVAL_MAX,
   ROUND_SCORES,
-  PLAYER_SPEED,
-  PLAYER_SPEED_RED,
+  PLAYER_MOVE_INTERVAL,
+  PLAYER_MOVE_INTERVAL_RED,
 } = require('./constants');
 
 class GameState {
@@ -91,8 +91,8 @@ class GameState {
         redTimer:  0,      // 남은 빨간 상태 틱
         alive:     true,
         score:     p.score || 0,  // 이전 라운드 누적 점수 이어받기
-        rank:      null,   // 탈락 순위 (사망 시 설정)
-        moveAccum: 0,      // 이동 누산기 (속도 조절용)
+        rank:         null, // 탈락 순위 (사망 시 설정)
+        moveCooldown: 0,   // ticks until next move (0 = ready)
       });
     });
   }
@@ -231,28 +231,31 @@ class GameState {
     player.prevX = player.x;
     player.prevY = player.y;
 
-    const speed = player.isRed ? PLAYER_SPEED_RED : PLAYER_SPEED;
-    player.moveAccum += speed;
+    // Count down cooldown; only move when it reaches 0
+    if (player.moveCooldown > 0) {
+      player.moveCooldown--;
+      return;
+    }
 
-    while (player.moveAccum >= 1.0) {
-      player.moveAccum -= 1.0;
+    if (!player.direction) return; // cooldown stays 0 — ready to move instantly on next input
 
-      if (!player.direction) continue;
+    // Reset cooldown for next move
+    const interval = player.isRed ? PLAYER_MOVE_INTERVAL_RED : PLAYER_MOVE_INTERVAL;
+    player.moveCooldown = interval - 1;
 
-      let nx = player.x;
-      let ny = player.y;
+    let nx = player.x;
+    let ny = player.y;
 
-      switch (player.direction) {
-        case 'up':    ny -= 1; break;
-        case 'down':  ny += 1; break;
-        case 'left':  nx -= 1; break;
-        case 'right': nx += 1; break;
-      }
+    switch (player.direction) {
+      case 'up':    ny -= 1; break;
+      case 'down':  ny += 1; break;
+      case 'left':  nx -= 1; break;
+      case 'right': nx += 1; break;
+    }
 
-      if (!this.isWall(nx, ny)) {
-        player.x = nx;
-        player.y = ny;
-      }
+    if (!this.isWall(nx, ny)) {
+      player.x = nx;
+      player.y = ny;
     }
   }
 

@@ -9,10 +9,10 @@ window.CONSTANTS = {
 
   // 플레이어
   MAX_PLAYERS: 4,
-  ATTACK_DURATION: 49, // 틱 (~10초 at 204ms tick)
+  ATTACK_DURATION: 294, // ticks (~10s at 34ms/tick)
 
   // 게임
-  TICK_RATE: 204, // ms (70% speed)
+  TICK_RATE: 34, // ms
   TOTAL_ROUNDS: 5,
   ROUND_SCORES: [300, 200, 100, 0],
 

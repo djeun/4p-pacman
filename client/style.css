@@ -213,6 +213,11 @@ canvas#game-canvas {
   border: 2px solid #FFD700;
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
   image-rendering: pixelated;
+  /* Responsive: scale down on small viewports, never scale up beyond native size */
+  max-width: min(100vw, 100vh);
+  max-height: min(100vw, 100vh);
+  width: auto;
+  height: auto;
 }
 
 /* ---------- 오버레이 (점수 / 게임 종료) ---------- */

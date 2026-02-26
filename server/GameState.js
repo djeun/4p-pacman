@@ -77,8 +77,20 @@ class GameState {
    */
   initPlayers(players) {
     this.players.clear();
+
+    // Select spawn indices to maximise spacing between players.
+    // 2 players → diagonal corners (TL + BR) instead of adjacent corners.
+    const SPAWN_INDEX_MAP = {
+      1: [0],
+      2: [0, 3],      // TL + BR (diagonal)
+      3: [0, 1, 3],   // TL + TR + BR
+      4: [0, 1, 2, 3],
+    };
+    const spawnIndices = SPAWN_INDEX_MAP[players.length] || players.map((_, i) => i);
+
     players.forEach((p, index) => {
-      const spawn = SPAWN_POSITIONS[index] || SPAWN_POSITIONS[0];
+      const spawnIdx = spawnIndices[index] ?? index;
+      const spawn = SPAWN_POSITIONS[spawnIdx] || SPAWN_POSITIONS[0];
       this.players.set(p.id, {
         id:        p.id,
         name:      p.name,
@@ -211,7 +223,8 @@ class GameState {
         redTimer:  p.redTimer,
         alive:     p.alive,
         score:     p.score,
-        rank:      p.rank,
+        rank:         p.rank,
+        moveCooldown: p.moveCooldown ?? 0,
       })),
       attackCoins:  this.attackCoins.map(c => ({ x: c.x, y: c.y, id: c.id })),
       shrinkBorder: this.shrinkBorder,

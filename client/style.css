@@ -204,7 +204,7 @@ input[type="text"]::placeholder {
   gap: 12px;
   padding: 8px 0;
   box-sizing: border-box;
-  cursor: none; /* 게임 중 커서 숨김 */
+  cursor: default;
 }
 
 .game-wrap {

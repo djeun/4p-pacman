@@ -9,9 +9,16 @@ window.InputHandler = class InputHandler {
     this._socket = socket;
     this._lastDirection = null;
 
-    // bind해서 removeEventListener에서도 동일 참조 사용 가능하게 저장
-    this._onKeyDown = this._handleKeyDown.bind(this);
+    this._onKeyDown  = this._handleKeyDown.bind(this);
+    this._onDpad     = this._handleDpad.bind(this);
+
     window.addEventListener('keydown', this._onKeyDown);
+
+    // D-패드 버튼: touchstart(모바일) + mousedown(데스크탑 테스트)
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+      btn.addEventListener('touchstart', this._onDpad, { passive: false });
+      btn.addEventListener('mousedown',  this._onDpad);
+    });
   }
 
   /**
@@ -58,10 +65,26 @@ window.InputHandler = class InputHandler {
   }
 
   /**
+   * D-패드 버튼 핸들러
+   */
+  _handleDpad(e) {
+    e.preventDefault(); // 터치 스크롤 방지
+    const direction = e.currentTarget.dataset.dir;
+    if (!direction) return;
+    const { EVENTS } = window.CONSTANTS;
+    this._lastDirection = direction;
+    this._socket.emit(EVENTS.PLAYER_INPUT, { direction });
+  }
+
+  /**
    * 이벤트 리스너 제거 (게임 종료/라운드 종료 시 호출)
    */
   destroy() {
     window.removeEventListener('keydown', this._onKeyDown);
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+      btn.removeEventListener('touchstart', this._onDpad);
+      btn.removeEventListener('mousedown',  this._onDpad);
+    });
     this._lastDirection = null;
   }
 };

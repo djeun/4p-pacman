@@ -198,8 +198,12 @@ input[type="text"]::placeholder {
   height: 100vh;
   background: #000;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
+  padding: 8px 0;
+  box-sizing: border-box;
   cursor: none; /* 게임 중 커서 숨김 */
 }
 
@@ -213,11 +217,61 @@ canvas#game-canvas {
   border: 2px solid #FFD700;
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
   image-rendering: pixelated;
-  /* Responsive: scale down on small viewports, never scale up beyond native size */
-  max-width: min(100vw, 100vh);
-  max-height: min(100vw, 100vh);
+  /* 모바일: D-패드(약 210px) 공간을 제외한 영역에 맞춤 */
+  max-width: min(100vw, calc(100vh - 230px));
+  max-height: min(100vw, calc(100vh - 230px));
   width: auto;
   height: auto;
+}
+
+/* 데스크탑: D-패드 숨김, 캔버스는 뷰포트 전체 활용 */
+@media (min-width: 768px) {
+  #dpad { display: none; }
+
+  canvas#game-canvas {
+    max-width: min(100vw, 100vh);
+    max-height: min(100vw, 100vh);
+  }
+}
+
+/* ---------- D-패드 ---------- */
+#dpad {
+  display: grid;
+  grid-template-areas:
+    ".    up    ."
+    "left down  right";
+  grid-template-columns: 72px 72px 72px;
+  grid-template-rows: 72px 72px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+#dpad .dpad-btn[data-dir="up"]    { grid-area: up; }
+#dpad .dpad-btn[data-dir="left"]  { grid-area: left; }
+#dpad .dpad-btn[data-dir="down"]  { grid-area: down; }
+#dpad .dpad-btn[data-dir="right"] { grid-area: right; }
+
+.dpad-btn {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 215, 0, 0.12);
+  border: 2px solid rgba(255, 215, 0, 0.6);
+  border-radius: 10px;
+  color: #FFD700;
+  font-size: 26px;
+  cursor: pointer;
+  touch-action: manipulation;   /* 더블탭 줌 방지 */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s;
+}
+
+.dpad-btn:active {
+  background: rgba(255, 215, 0, 0.4);
+  border-color: #FFD700;
 }
 
 /* ---------- 오버레이 (점수 / 게임 종료) ---------- */

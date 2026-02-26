@@ -196,14 +196,10 @@ class GameState {
 
     for (const player of this.players.values()) {
       if (player.alive) {
-        // 생존자 = 1위
-        player.rank  = total - this.deadCount; // 보통 1
-        player.score += ROUND_SCORES[0];
-      } else {
-        // 탈락 순서에 따른 점수 (rankCounter는 1부터 시작, 먼저 탈락 = 높은 rankCounter = 낮은 순위)
-        const roundRank = Math.min(player.rank, ROUND_SCORES.length - 1);
-        player.score += ROUND_SCORES[roundRank];
+        player.rank = 0; // 생존자 = 1위
       }
+      // n명 게임: rank 0(1등) = (n-1)*100, rank k(k+1등) = (n-1-k)*100
+      player.score += Math.max(total - 1 - player.rank, 0) * 100;
     }
   }
 
@@ -429,7 +425,7 @@ class GameState {
     // rank: 먼저 죽을수록 높은 인덱스 (낮은 순위)
     // 4명이면: 첫 사망=rank3(0pt), 두번째=rank2(100pt), 세번째=rank1(200pt)
     this.rankCounter++;
-    player.rank = Math.min(this.players.size - this.rankCounter, ROUND_SCORES.length - 1);
+    player.rank = this.players.size - this.rankCounter;
   }
 
   /**

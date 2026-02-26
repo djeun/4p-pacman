@@ -99,8 +99,9 @@ class GameState {
         prevX:     spawn.x,
         prevY:     spawn.y,
         direction: null,   // 'up' | 'down' | 'left' | 'right' | null
-        isRed:     false,
-        redTimer:  0,      // 남은 빨간 상태 틱
+        isRed:      false,
+        redTimer:   0,      // 남은 빨간 상태 틱
+        speedLevel: 0,      // 누적 코인 수 (1개=+20%, 2개=+40%, …)
         alive:     true,
         score:     p.score || 0,  // 이전 라운드 누적 점수 이어받기
         rank:         null, // 탈락 순위 (사망 시 설정)
@@ -162,8 +163,9 @@ class GameState {
       if (player.alive && player.isRed) {
         player.redTimer--;
         if (player.redTimer <= 0) {
-          player.isRed    = false;
-          player.redTimer = 0;
+          player.isRed      = false;
+          player.redTimer   = 0;
+          player.speedLevel = 0;
         }
       }
     }
@@ -224,7 +226,7 @@ class GameState {
         alive:     p.alive,
         score:     p.score,
         rank:         p.rank,
-        moveCooldown: p.moveCooldown ?? 0,
+        speedLevel:   p.speedLevel ?? 0,
       })),
       attackCoins:  this.attackCoins.map(c => ({ x: c.x, y: c.y, id: c.id })),
       shrinkBorder: this.shrinkBorder,
@@ -252,8 +254,9 @@ class GameState {
 
     if (!player.direction) return; // cooldown stays 0 — ready to move instantly on next input
 
-    // Reset cooldown for next move
-    const interval = player.isRed ? PLAYER_MOVE_INTERVAL_RED : PLAYER_MOVE_INTERVAL;
+    // Reset cooldown for next move.
+    // Each coin stacks a -1 to the interval (min 2 ticks).
+    const interval = Math.max(PLAYER_MOVE_INTERVAL - player.speedLevel, 2);
     player.moveCooldown = interval - 1;
 
     let nx = player.x;
@@ -351,8 +354,9 @@ class GameState {
       );
       if (coinIndex !== -1) {
         this.attackCoins.splice(coinIndex, 1);
+        player.speedLevel++;           // 스택: 코인마다 +1 레벨
         player.isRed    = true;
-        player.redTimer = ATTACK_DURATION;
+        player.redTimer = ATTACK_DURATION; // 타이머 리셋
       }
     }
   }
@@ -417,9 +421,10 @@ class GameState {
    * @param {object} player
    */
   _killPlayer(player) {
-    player.alive    = false;
-    player.isRed    = false;
-    player.redTimer = 0;
+    player.alive      = false;
+    player.isRed      = false;
+    player.redTimer   = 0;
+    player.speedLevel = 0;
     this.deadCount++;
     // rank: 먼저 죽을수록 높은 인덱스 (낮은 순위)
     // 4명이면: 첫 사망=rank3(0pt), 두번째=rank2(100pt), 세번째=rank1(200pt)

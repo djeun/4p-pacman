@@ -65,7 +65,7 @@ window.GameClient = class GameClient {
         disp.y = player.y;
       } else if (dist > 0.001) {
         // Move toward server position at natural movement speed
-        const interval     = player.isRed ? PLAYER_MOVE_INTERVAL_RED : PLAYER_MOVE_INTERVAL;
+        const interval     = Math.max(PLAYER_MOVE_INTERVAL - (player.speedLevel || 0), 2);
         const cellDuration = interval * TICK_RATE; // ms to cross one cell
         const step         = dt / cellDuration;    // cells to advance this frame
 

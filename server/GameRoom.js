@@ -97,16 +97,12 @@ class GameRoom {
 }
 
 /**
- * 4자리 영숫자 대문자 룸 코드를 생성한다.
+ * 1자리 영숫자 대문자 룸 코드를 생성한다.
  * @returns {string}
  */
 function generateRoomCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-  for (let i = 0; i < 4; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+  return chars[Math.floor(Math.random() * chars.length)];
 }
 
 module.exports = { GameRoom, generateRoomCode };
